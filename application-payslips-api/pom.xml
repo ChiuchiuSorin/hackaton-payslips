@@ -29,7 +29,7 @@
   <artifactId>application-payslips-api</artifactId>
   <packaging>jar</packaging>
   <name>Payslips application - API</name>
-  <description/>
+  <description />
   <dependencies>
     <dependency>
       <groupId>org.xwiki.commons</groupId>

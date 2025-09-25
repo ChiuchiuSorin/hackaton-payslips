@@ -30,22 +30,12 @@
   <artifactId>application-payslips-ui</artifactId>
   <packaging>xar</packaging>
   <name>Payslips application</name>
-  <description>Contains administration tools for managing a running XWiki instance</description>
+  <description>Useful to process the payslips from Excel file format.</description>
 
   <properties>
     <!-- Name to display by the Extension Manager -->
-    <xwiki.extension.name>Admin Tools Application (Pro)</xwiki.extension.name>
+    <xwiki.extension.name>Payslips application</xwiki.extension.name>
     <xwiki.extension.category>application</xwiki.extension.category>
-    <!-- The list of documents that have an implicit unlimited free license. The users can view these documents without
-      buying a license or getting a trial license, but they cannot edit or delete them. -->
-    <xwiki.extension.licensing.publicDocuments>
-      AdminTools.WebHome
-    </xwiki.extension.licensing.publicDocuments>
-    <!-- The list of documents that are not covered by the extension license. The user that installs the extension has
-      full access to these documents (view, edit, delete) without having a license, so use this property wisely. -->
-    <xwiki.extension.licensing.excludedDocuments>
-      AdminTools.Code.Configuration
-    </xwiki.extension.licensing.excludedDocuments>
     <!-- Don't run CLIRR here since there's no Java code. -->
     <xwiki.clirr.skip>true</xwiki.clirr.skip>
   </properties>
@@ -57,43 +47,9 @@
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-livetable-ui</artifactId>
-      <version>${platform.version}</version>
-      <type>xar</type>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-sheet-ui</artifactId>
-      <version>${platform.version}</version>
-      <type>xar</type>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-uiextension-ui</artifactId>
-      <version>${platform.version}</version>
-      <type>xar</type>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-display-macro</artifactId>
       <version>${platform.version}</version>
       <scope>runtime</scope>
     </dependency>
   </dependencies>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.xwiki.commons</groupId>
-        <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
-        <configuration>
-          <contentPages>
-            <contentPage>.*/AdminTools/WebHome\.xml</contentPage>
-          </contentPages>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>

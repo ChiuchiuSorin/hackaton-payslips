@@ -32,7 +32,7 @@
   <packaging>pom</packaging>
   <version>1.0.0-SNAPSHOT</version>
   <name>Payslips application - Parent POM</name>
-  <description/>
+  <description />
   <scm>
     <connection>scm:git:git://github.com/xwikisas/application-admintools.git</connection>
     <developerConnection>scm:git:git@github.com:xwikisas/application-admintools.git</developerConnection>
@@ -45,7 +45,7 @@
       <name>Sorin Chiuchiu</name>
     </developer>
     <developer>
-      <id>FarcasiAlexandru</id>
+      <id>farcasut</id>
       <name>Farcasi Alexandru</name>
     </developer>
   </developers>
