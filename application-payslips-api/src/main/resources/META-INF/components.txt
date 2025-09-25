@@ -1,2 +1,4 @@
 org.xwiki.payslips.internal.ExcelParser
 org.xwiki.payslips.script.PayslipsScript
+org.xwiki.payslips.internal.PayslipDocumentTreeSaver
+org.xwiki.payslips.internal.PDFGenerator

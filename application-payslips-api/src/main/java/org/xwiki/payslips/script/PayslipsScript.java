@@ -19,21 +19,28 @@
  */
 package org.xwiki.payslips.script;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.fop.pdf.PDFDocument;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.payslips.internal.ExcelParser;
+import org.xwiki.payslips.internal.PDFGenerator;
+import org.xwiki.payslips.internal.PayslipDocumentTreeSaver;
 import org.xwiki.script.service.ScriptService;
 
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.XWikiDocument;
 
 @Component
 @Named("payslips")
@@ -43,7 +50,13 @@ public class PayslipsScript implements ScriptService
     @Inject
     private ExcelParser excelParser;
 
-    public void genereatePayslips(AttachmentReference reference, String date ) throws XWikiException
+    @Inject
+    private PDFGenerator pdfGenerator;
+
+    @Inject
+    private PayslipDocumentTreeSaver payslipDocumentTreeSaver;
+
+    public void genereatePayslips(AttachmentReference reference, String date) throws XWikiException, IOException
     {
         String officialDate = date;
         if (officialDate == null || officialDate.isEmpty()) {
@@ -52,6 +65,14 @@ public class PayslipsScript implements ScriptService
             SimpleDateFormat formatter = new SimpleDateFormat("LLLL yyyy", romanianLocale);
             officialDate = formatter.format(new Date());
         }
-        excelParser.payslipProcess(reference, officialDate);
+        XWikiDocument wikiDocument = payslipDocumentTreeSaver.generateDocumentsRoot();
+        Map<String, Map<String, String>> payslips = excelParser.payslipProcess(reference, officialDate);
+        for (String username : payslips.keySet()) {
+            PDDocument document = pdfGenerator.genereatePDF(payslips.get(username));
+            payslipDocumentTreeSaver.saveDocumentPDF(String.format("%s-%s", username, officialDate), document, wikiDocument);
+            document.close();
+        }
+
+        payslipDocumentTreeSaver.documentSave(wikiDocument);
     }
 }

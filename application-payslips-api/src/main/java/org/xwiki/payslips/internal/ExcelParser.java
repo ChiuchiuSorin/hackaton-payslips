@@ -76,7 +76,7 @@ public class ExcelParser
         int index = 0;
         for (Row row : sheet) {
             if (row.getCell(columnIndex) == null) {
-                startingIndexes.add(index);
+                startingIndexes.add(index+1);
                 break;
             }
             if (row.getCell(columnIndex).toString().toLowerCase().startsWith(startsWithPattern)) {
