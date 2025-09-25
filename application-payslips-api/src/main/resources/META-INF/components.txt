@@ -1,0 +1,2 @@
+org.xwiki.payslips.internal.ExcelParser
+org.xwiki.payslips.script.PayslipsScript
