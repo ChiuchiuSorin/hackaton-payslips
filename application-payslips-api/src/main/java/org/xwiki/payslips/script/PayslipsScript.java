@@ -19,16 +19,39 @@
  */
 package org.xwiki.payslips.script;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.model.reference.AttachmentReference;
+import org.xwiki.payslips.internal.ExcelParser;
 import org.xwiki.script.service.ScriptService;
+
+import com.xpn.xwiki.XWikiException;
 
 @Component
 @Named("payslips")
 @Singleton
 public class PayslipsScript implements ScriptService
 {
+    @Inject
+    private ExcelParser excelParser;
 
+    public void genereatePayslips(AttachmentReference reference, String date ) throws XWikiException
+    {
+        String officialDate = date;
+        if (officialDate == null || officialDate.isEmpty()) {
+            Locale romanianLocale = new Locale("ro", "RO");
+            DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.FULL, romanianLocale);
+            SimpleDateFormat formatter = new SimpleDateFormat("LLLL yyyy", romanianLocale);
+            officialDate = formatter.format(new Date());
+        }
+        excelParser.payslipProcess(reference, officialDate);
+    }
 }

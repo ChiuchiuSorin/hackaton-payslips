@@ -19,13 +19,106 @@
  */
 package org.xwiki.payslips.internal;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.model.reference.AttachmentReference;
+
+import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.XWikiDocument;
 
 @Component(roles = ExcelParser.class)
 @Singleton
 public class ExcelParser
 {
+    @Inject
+    private Provider<XWikiContext> contextProvider;
 
+    public Map<String, Map<String, String>> payslipProcess(AttachmentReference ref, String date) throws XWikiException
+    {
+        XWikiContext context = contextProvider.get();
+        XWiki xwiki = context.getWiki();
+        XWikiDocument xWikiDocument = xwiki.getDocument(ref.getDocumentReference(), contextProvider.get());
+
+        try (InputStream fis = xWikiDocument.getAttachment(ref.getName())
+            .getContentInputStream(context); Workbook workbook = new XSSFWorkbook(fis))
+        {
+
+            Sheet sheet = workbook.getSheetAt(0);
+
+            List<Integer> startingIndexes = getStartingColumns(sheet, 0, date);
+            return getIndividualPayslips(sheet, startingIndexes);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<Integer> getStartingColumns(Sheet sheet, int columnIndex, String startsWithPattern)
+    {
+
+        List<Integer> startingIndexes = new ArrayList<>();
+        int index = 0;
+        for (Row row : sheet) {
+            if (row.getCell(columnIndex) == null) {
+                startingIndexes.add(index);
+                break;
+            }
+            if (row.getCell(columnIndex).toString().toLowerCase().startsWith(startsWithPattern)) {
+                startingIndexes.add(index);
+            }
+            index++;
+        }
+        return startingIndexes;
+    }
+
+    private Map<String, Map<String, String>> getIndividualPayslips(Sheet sheet, List<Integer> indexes)
+    {
+        Map<String, Map<String, String>> payslips = new HashMap<>();
+        for (int i = 0; i < indexes.size() - 1; i++) {
+            payslips.put(getIntranetUsername(sheet, indexes.get(i) + 1, 0),
+                getPayslip(indexes.get(i), indexes.get(i + 1) - 1, 0, 1, sheet));
+            payslips.put(getIntranetUsername(sheet, indexes.get(i) + 1, 3),
+                getPayslip(indexes.get(i), indexes.get(i + 1) - 1, 3, 4, sheet));
+        }
+        return payslips;
+    }
+
+    private String getIntranetUsername(Sheet sheet, int rowIndex, int columnIndex)
+    {
+        String name = sheet.getRow(rowIndex).getCell(columnIndex).toString();
+        //1. 1. BULIGA SARAH\107\Internship\Intern
+        String[] parts = name.toLowerCase().split(" ");
+        // Parts[0] -> index
+        // Parts[1] -> Last name
+        // Parts[2] -> First name\107\Internship\Intern
+        return parts[2].charAt(0) + parts[1];
+    }
+
+    private Map<String, String> getPayslip(int start, int end, int keyColumn, int valueColumn, Sheet sheet)
+    {
+        Map<String, String> paySlip = new LinkedHashMap<>();
+        for (int index = start; index < end; index++) {
+            Row row = sheet.getRow(index);
+            String key = row.getCell(keyColumn).toString();
+            String value = row.getCell(valueColumn).toString();
+            paySlip.put(key, value);
+        }
+        return paySlip;
+    }
 }
