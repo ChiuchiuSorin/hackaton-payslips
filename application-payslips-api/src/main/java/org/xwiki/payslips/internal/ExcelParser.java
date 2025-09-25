@@ -43,6 +43,9 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 
+/**
+ * Parse the given payslip content from .xlsx file format.
+ */
 @Component(roles = ExcelParser.class)
 @Singleton
 public class ExcelParser
@@ -59,27 +62,24 @@ public class ExcelParser
         try (InputStream fis = xWikiDocument.getAttachment(ref.getName())
             .getContentInputStream(context); Workbook workbook = new XSSFWorkbook(fis))
         {
-
             Sheet sheet = workbook.getSheetAt(0);
-
-            List<Integer> startingIndexes = getStartingColumns(sheet, 0, date);
+            List<Integer> startingIndexes = getStartingColumns(sheet, date);
             return getIndividualPayslips(sheet, startingIndexes);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private List<Integer> getStartingColumns(Sheet sheet, int columnIndex, String startsWithPattern)
+    private List<Integer> getStartingColumns(Sheet sheet, String startsWithPattern)
     {
-
         List<Integer> startingIndexes = new ArrayList<>();
         int index = 0;
         for (Row row : sheet) {
-            if (row.getCell(columnIndex) == null) {
-                startingIndexes.add(index+1);
+            if (row.getCell(0) == null) {
+                startingIndexes.add(index + 1);
                 break;
             }
-            if (row.getCell(columnIndex).toString().toLowerCase().startsWith(startsWithPattern)) {
+            if (row.getCell(0).toString().toLowerCase().startsWith(startsWithPattern)) {
                 startingIndexes.add(index);
             }
             index++;
@@ -102,11 +102,7 @@ public class ExcelParser
     private String getIntranetUsername(Sheet sheet, int rowIndex, int columnIndex)
     {
         String name = sheet.getRow(rowIndex).getCell(columnIndex).toString();
-        //1. 1. BULIGA SARAH\107\Internship\Intern
         String[] parts = name.toLowerCase().split(" ");
-        // Parts[0] -> index
-        // Parts[1] -> Last name
-        // Parts[2] -> First name\107\Internship\Intern
         return parts[2].charAt(0) + parts[1];
     }
 

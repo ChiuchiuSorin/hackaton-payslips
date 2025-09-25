@@ -20,7 +20,6 @@
 package org.xwiki.payslips.script;
 
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -30,13 +29,12 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.apache.fop.pdf.PDFDocument;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.payslips.internal.ExcelParser;
 import org.xwiki.payslips.internal.PDFGenerator;
-import org.xwiki.payslips.internal.PayslipDocumentTreeSaver;
+import org.xwiki.payslips.internal.PayslipDocumentSaver;
 import org.xwiki.script.service.ScriptService;
 
 import com.xpn.xwiki.XWikiException;
@@ -54,25 +52,26 @@ public class PayslipsScript implements ScriptService
     private PDFGenerator pdfGenerator;
 
     @Inject
-    private PayslipDocumentTreeSaver payslipDocumentTreeSaver;
+    private PayslipDocumentSaver payslipDocumentSaver;
 
-    public void genereatePayslips(AttachmentReference reference, String date) throws XWikiException, IOException
+    public void generatePayslips(AttachmentReference reference, String date) throws XWikiException, IOException
     {
         String officialDate = date;
         if (officialDate == null || officialDate.isEmpty()) {
             Locale romanianLocale = new Locale("ro", "RO");
-            DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.FULL, romanianLocale);
             SimpleDateFormat formatter = new SimpleDateFormat("LLLL yyyy", romanianLocale);
             officialDate = formatter.format(new Date());
         }
-        XWikiDocument wikiDocument = payslipDocumentTreeSaver.generateDocumentsRoot();
         Map<String, Map<String, String>> payslips = excelParser.payslipProcess(reference, officialDate);
-        for (String username : payslips.keySet()) {
-            PDDocument document = pdfGenerator.genereatePDF(payslips.get(username));
-            payslipDocumentTreeSaver.saveDocumentPDF(String.format("%s-%s", username, officialDate), document, wikiDocument);
-            document.close();
+        XWikiDocument wikiDocument = payslipDocumentSaver.generateDocumentsRoot(officialDate);
+
+        for (Map.Entry<String, Map<String, String>> entry : payslips.entrySet()) {
+            PDDocument pdfDocument = pdfGenerator.genereatePDF(entry.getValue());
+            payslipDocumentSaver.saveDocumentPDF(String.format("%s-%s", entry.getKey(), officialDate), pdfDocument,
+                wikiDocument);
+            pdfDocument.close();
         }
 
-        payslipDocumentTreeSaver.documentSave(wikiDocument);
+        payslipDocumentSaver.documentSave(wikiDocument);
     }
 }

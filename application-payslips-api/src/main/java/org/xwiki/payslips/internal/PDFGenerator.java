@@ -38,26 +38,20 @@ import org.xwiki.component.annotation.Component;
 @Singleton
 public class PDFGenerator
 {
-    public PDDocument genereatePDF(Map<String, String> payslip) throws IOException
+    public PDDocument genereatePDF(Map<String, String> payslip)
     {
-
         PDDocument document = new PDDocument();
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
         try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-
             URL data = getClass().getClassLoader().getResource("logo.png");
             PDImageXObject headerImage;
             try (InputStream in = data.openStream()) {
-                 headerImage = PDImageXObject.createFromByteArray(
-                    document, in.readAllBytes(), "logo.png"
-                );
+                headerImage = PDImageXObject.createFromByteArray(document, in.readAllBytes(), "logo.png");
             }
             float imageStartingPoint = PDRectangle.A4.getWidth() / 2 - 350 / 2;
             contentStream.drawImage(headerImage, imageStartingPoint, 775, 175, 52.5f); // x, y, width, height
             float yPosition = 750;
-
-
             float margin = 50;
             float tableWidth = page.getMediaBox().getWidth() - 2 * margin;
             float rowHeight = 20;
@@ -78,9 +72,8 @@ public class PDFGenerator
                 yPosition -= rowHeight;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-
         return document;
     }
 }

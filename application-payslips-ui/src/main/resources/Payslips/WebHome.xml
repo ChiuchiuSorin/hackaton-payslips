@@ -31,7 +31,7 @@
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>Payslips</title>
+  <title>Payslips generator</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
@@ -40,42 +40,45 @@
 #attachmentPicker_import
 {{/velocity}}
 
-
 {{velocity}}
 #set ($payslipAttachment = $request.payslipAttachment)
-#set ($payslipDate = $request.payslipDate)
 #if ($payslipAttachment &amp;&amp; $payslipAttachment != '')
-{{html}}
-
   #try()
-   $services.payslips.genereatePayslips($payslipAttachment, $payslipDate)
+    $services.payslips.generatePayslips($payslipAttachment, $request.payslipDate)
+    $response.sendRedirect($doc.getURL('view', 'operation=success'))
   #end
   #if ("$!exception" != '')
-    #displayException('some summary to display', $exception)
-  #else
-
-#info('Payslip successfully processed!')
-
+    {{html}}
+      #displayException('An error occured while processing the payslips', $exception)
+      &lt;a href="$doc.getURL('view')" class='button buttonwrapper'&gt;Return&lt;/a&gt;
+    {{/html}}
   #end
-  &lt;a href="$doc.getURL('view')" class='button buttonwrapper'&gt;Return&lt;/a&gt;
-{{/html}}
 #else
 {{html}}
-&lt;form class="xform" method="get" action="$doc.getURL('view')"&gt;
-  &lt;dl&gt;
-    &lt;dt&gt;
-      &lt;label for="payslip-attachment"&gt;Payslip&lt;/label&gt;
-    &lt;/dt&gt;
-    &lt;dd&gt;&lt;input type="text" data-upload-allowed='true' data-accept='.xlsx' name="payslipAttachment" id="payslipAttachment" name="payslip" value="" class="suggest-attachments"/&gt;&lt;/dd&gt;
-    &lt;dt&gt;
-      &lt;label for="payslip-date"&gt;Payslip date&lt;/label&gt;
-    &lt;/dt&gt;
-    &lt;dd&gt;&lt;input type="text" id="payslipDate" name="payslipDate" placeholder="Date in format LLLL yyyy (ex: Iulie 2025)"&gt;&lt;/dd&gt;
-  &lt;/dl&gt;
-  &lt;input type='submit' class='button buttonwrapper' value='Submit'&gt;
-&lt;/form&gt;
+  #if ($request.operation == 'success')
+      #info('Payslip successfully processed!')
+  #end
+  &lt;form class="xform" method="get" action="$doc.getURL('view')"&gt;
+    &lt;dl&gt;
+      &lt;dt&gt;
+        &lt;label for="payslip-attachment"&gt;Payslip&lt;/label&gt;
+      &lt;/dt&gt;
+      &lt;dd&gt;&lt;input type='text' data-upload-allowed='true' data-accept='.xlsx' name='payslipAttachment' id='payslip-attachment' placeholder='Select payslip...' class='suggest-attachments'/&gt;&lt;/dd&gt;
+      &lt;dt&gt;
+        &lt;label for="payslip-date"&gt;Payslip date&lt;/label&gt;
+      &lt;/dt&gt;
+      &lt;dd&gt;&lt;input type="text" id="payslipDate" name="payslipDate" placeholder="Date in format LLLL yyyy (ex: Iulie 2025)"&gt;&lt;/dd&gt;
+    &lt;/dl&gt;
+    &lt;input type='submit' class='button buttonwrapper' value='Submit'&gt;
+  &lt;/form&gt;
 {{/html}}
 #end
 {{/velocity}}
-</content>
+
+{{liveData
+  id="payslips"
+  properties='doc.title,_actions'
+  source="liveTable"
+  sourceParameters="className=Payslips.Code.PayslipClass&amp;translationPrefix=platform.index."
+/}}</content>
 </xwikidoc>
