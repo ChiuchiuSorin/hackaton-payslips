@@ -45,9 +45,9 @@ import com.xpn.xwiki.objects.BaseObject;
 /**
  * Handles the creation of payslips pages.
  */
-@Component(roles = PayslipDocumentSaver.class)
+@Component(roles = PayslipDocumentProcessor.class)
 @Singleton
-public class PayslipDocumentSaver
+public class PayslipDocumentProcessor
 {
     private static final String PAYSLIPS_CLASS_NAME = "Payslips.Code.PayslipClass";
 
@@ -63,17 +63,14 @@ public class PayslipDocumentSaver
     /**
      * Saves the given pdf to the document.
      *
-     * @param fileName name of the PDF
      * @param pdfDoc PDF document
-     * @param document target XWiki parent
      * @throws IOException if any error occurs
      */
-    public void saveDocumentPDF(String fileName, PDDocument pdfDoc, XWikiDocument document) throws IOException
+    public InputStream getPdfDocumentStream(PDDocument pdfDoc) throws IOException
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         pdfDoc.save(baos);
-        InputStream pdfStream = new ByteArrayInputStream(baos.toByteArray());
-        document.setAttachment(fileName, pdfStream, contextProvider.get());
+        return new ByteArrayInputStream(baos.toByteArray());
     }
 
     /**
@@ -88,8 +85,8 @@ public class PayslipDocumentSaver
         XWikiContext context = contextProvider.get();
         XWiki wiki = context.getWiki();
         String documentName = String.format("Payslips %s", date);
-        List<String> spaces = List.of("Payslips", documentName);
-        LocalDocumentReference payslipReference = new LocalDocumentReference(spaces, "WebHome");
+        List<String> spaces = List.of("Payslips");
+        LocalDocumentReference payslipReference = new LocalDocumentReference(spaces, documentName);
         DocumentReference documentReference = new DocumentReference(payslipReference, context.getWikiReference());
         XWikiDocument payslipDoc = wiki.getDocument(documentReference, context);
         if (!wiki.exists(documentReference, context)) {
@@ -97,17 +94,6 @@ public class PayslipDocumentSaver
             wiki.saveDocument(payslipDoc, context);
         }
         return payslipDoc;
-    }
-
-    /**
-     * Save the given document.
-     *
-     * @param duku target document
-     * @throws XWikiException if the dark side is too strong
-     */
-    public void documentSave(XWikiDocument duku) throws XWikiException
-    {
-        contextProvider.get().getWiki().saveDocument(duku, contextProvider.get());
     }
 
     private void addPayslipClass(XWikiDocument payslipDoc, String payslipName) throws XWikiException

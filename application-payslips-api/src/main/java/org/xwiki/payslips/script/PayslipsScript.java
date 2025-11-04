@@ -29,16 +29,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.AttachmentReference;
+import org.xwiki.payslips.internal.ArchiveGenerator;
 import org.xwiki.payslips.internal.ExcelParser;
-import org.xwiki.payslips.internal.PDFGenerator;
-import org.xwiki.payslips.internal.PayslipDocumentSaver;
 import org.xwiki.script.service.ScriptService;
 
 import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.doc.XWikiDocument;
 
 @Component
 @Named("payslips")
@@ -49,12 +46,9 @@ public class PayslipsScript implements ScriptService
     private ExcelParser excelParser;
 
     @Inject
-    private PDFGenerator pdfGenerator;
+    private ArchiveGenerator archiveGenerator;
 
-    @Inject
-    private PayslipDocumentSaver payslipDocumentSaver;
-
-    public void generatePayslips(AttachmentReference reference, String date) throws XWikiException, IOException
+    public String generatePayslips(AttachmentReference reference, String date) throws XWikiException
     {
         String officialDate = date;
         if (officialDate == null || officialDate.isEmpty()) {
@@ -63,15 +57,6 @@ public class PayslipsScript implements ScriptService
             officialDate = formatter.format(new Date());
         }
         Map<String, Map<String, String>> payslips = excelParser.payslipProcess(reference, officialDate);
-        XWikiDocument wikiDocument = payslipDocumentSaver.generateDocumentsRoot(officialDate);
-
-        for (Map.Entry<String, Map<String, String>> entry : payslips.entrySet()) {
-            PDDocument pdfDocument = pdfGenerator.genereatePDF(entry.getValue());
-            payslipDocumentSaver.saveDocumentPDF(String.format("%s-%s", entry.getKey(), officialDate), pdfDocument,
-                wikiDocument);
-            pdfDocument.close();
-        }
-
-        payslipDocumentSaver.documentSave(wikiDocument);
+        return archiveGenerator.generateArchive(payslips, officialDate);
     }
 }

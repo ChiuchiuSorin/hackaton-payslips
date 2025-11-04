@@ -36,8 +36,9 @@
     <!-- Name to display by the Extension Manager -->
     <xwiki.extension.name>Payslips application</xwiki.extension.name>
     <xwiki.extension.category>application</xwiki.extension.category>
-    <!-- Don't run CLIRR here since there's no Java code. -->
+    <!-- There are no java resources in this project. -->
     <xwiki.clirr.skip>true</xwiki.clirr.skip>
+    <xwiki.revapi.skip>true</xwiki.revapi.skip>
   </properties>
   <dependencies>
     <dependency>
@@ -52,4 +53,21 @@
       <scope>runtime</scope>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.xwiki.commons</groupId>
+        <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+          <entries>
+            <entry>
+              <document>Payslips.WebHome</document>
+              <type>customizable</type>
+            </entry>
+          </entries>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

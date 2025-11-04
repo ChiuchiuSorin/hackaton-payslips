@@ -35,17 +35,15 @@
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
-  <hidden>true</hidden>
-  <content>{{velocity output="false"}}
-#attachmentPicker_import
-{{/velocity}}
+  <hidden>false</hidden>
+  <content>{{velocity}}
+#set ($discard = $xwiki.jsx.use('Payslips.WebHome'))
 
-{{velocity}}
 #set ($payslipAttachment = $request.payslipAttachment)
 #if ($payslipAttachment &amp;&amp; $payslipAttachment != '')
   #try()
-    $services.payslips.generatePayslips($payslipAttachment, $request.payslipDate)
-    $response.sendRedirect($doc.getURL('view', 'operation=success'))
+    #set ($attachmentUrl = $services.payslips.generatePayslips($payslipAttachment, $request.payslipDate))
+    $response.sendRedirect($attachmentUrl)
   #end
   #if ("$!exception" != '')
     {{html}}
@@ -55,19 +53,18 @@
   #end
 #else
 {{html}}
-  #if ($request.operation == 'success')
-      #info('Payslip successfully processed!')
-  #end
   &lt;form class="xform" method="get" action="$doc.getURL('view')"&gt;
     &lt;dl&gt;
       &lt;dt&gt;
         &lt;label for="payslip-attachment"&gt;Payslip&lt;/label&gt;
       &lt;/dt&gt;
-      &lt;dd&gt;&lt;input type='text' data-upload-allowed='true' data-accept='.xlsx' name='payslipAttachment' id='payslip-attachment' placeholder='Select payslip...' class='suggest-attachments'/&gt;&lt;/dd&gt;
+      &lt;dd&gt;&lt;input type='text' name='payslipAttachment' id='payslip-attachment' placeholder='Select
+        payslip...'/&gt;&lt;/dd&gt;
       &lt;dt&gt;
         &lt;label for="payslip-date"&gt;Payslip date&lt;/label&gt;
       &lt;/dt&gt;
-      &lt;dd&gt;&lt;input type="text" id="payslipDate" name="payslipDate" placeholder="Date in format LLLL yyyy (ex: Iulie 2025)"&gt;&lt;/dd&gt;
+      &lt;dd&gt;&lt;input type="text" id="payslip-date" name="payslipDate" placeholder="Date in format LLLL yyyy (ex:
+        Iulie 2025)"&gt;&lt;/dd&gt;
     &lt;/dl&gt;
     &lt;input type='submit' class='button buttonwrapper' value='Submit'&gt;
   &lt;/form&gt;
@@ -77,8 +74,131 @@
 
 {{liveData
   id="payslips"
-  properties='doc.title,_actions'
+  properties='doc.name,doc.date,_actions'
+  sort="doc.date:desc"
   source="liveTable"
   sourceParameters="className=Payslips.Code.PayslipClass&amp;translationPrefix=platform.index."
-/}}</content>
+}}{
+  "meta": {
+        "actions": [
+      {
+        "id": "edit",
+        "allowProperty": "false"
+      }
+    ]
+  }
+}{{/liveData}}</content>
+  <object>
+    <name>Payslips.WebHome</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>78b479fa-102e-44c0-af39-a548d4a680cb</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <restricted>0</restricted>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>require.config({
+  paths: {
+    'xwiki-suggestAttachments': "$xwiki.getSkinFile('uicomponents/suggest/suggestAttachments.js', true)" +
+    "?v=$escapetool.url($xwiki.version)"
+  }
+});
+
+require(['jquery', 'xwiki-suggestAttachments'], function($) {
+  $('input[name="payslipAttachment"]').suggestAttachments({
+    maxItems:1,
+    accept: '.xlsx',
+    uploadAllowed: true
+  });
+});</code>
+    </property>
+    <property>
+      <name>PaySlipsJS</name>
+    </property>
+    <property>
+      <parse>1</parse>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
 </xwikidoc>

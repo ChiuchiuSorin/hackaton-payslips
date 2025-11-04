@@ -38,7 +38,7 @@ import org.xwiki.component.annotation.Component;
 @Singleton
 public class PDFGenerator
 {
-    public PDDocument genereatePDF(Map<String, String> payslip)
+    public PDDocument generatePDF(Map<String, String> payslip)
     {
         PDDocument document = new PDDocument();
         PDPage page = new PDPage(PDRectangle.A4);
