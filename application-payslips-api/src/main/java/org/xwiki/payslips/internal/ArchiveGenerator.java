@@ -94,5 +94,6 @@ public class ArchiveGenerator
             }
         }
         zos.closeEntry();
+        pdfDocument.close();
     }
 }
