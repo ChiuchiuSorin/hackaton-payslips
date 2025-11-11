@@ -65,7 +65,7 @@ public class ExcelParser
             Sheet sheet = workbook.getSheetAt(0);
             List<Integer> startingIndexes = getStartingColumns(sheet, date);
             return getIndividualPayslips(sheet, startingIndexes);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -79,7 +79,7 @@ public class ExcelParser
                 startingIndexes.add(index + 1);
                 break;
             }
-            if (row.getCell(0).toString().toLowerCase().startsWith(startsWithPattern)) {
+            if (row.getCell(0).toString().toLowerCase().startsWith(startsWithPattern.toLowerCase())) {
                 startingIndexes.add(index);
             }
             index++;
@@ -93,8 +93,10 @@ public class ExcelParser
         for (int i = 0; i < indexes.size() - 1; i++) {
             payslips.put(getIntranetUsername(sheet, indexes.get(i) + 1, 0),
                 getPayslip(indexes.get(i), indexes.get(i + 1) - 1, 0, 1, sheet));
-            payslips.put(getIntranetUsername(sheet, indexes.get(i) + 1, 3),
-                getPayslip(indexes.get(i), indexes.get(i + 1) - 1, 3, 4, sheet));
+            if (!sheet.getRow(indexes.get(i) + 1).getCell(3).toString().isBlank()) {
+                payslips.put(getIntranetUsername(sheet, indexes.get(i) + 1, 3),
+                    getPayslip(indexes.get(i), indexes.get(i + 1) - 1, 3, 4, sheet));
+            }
         }
         return payslips;
     }
